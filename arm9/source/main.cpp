@@ -63,6 +63,7 @@ USA
 #include "dmaTGDS.h"
 #include "nds_cp15_misc.h"
 #include "fatfslayerTGDS.h"
+#include "debugNocash.h"
 #include <stdio.h>
 
 GLuint	texture[1];			// Storage For 1 Texture
@@ -113,10 +114,39 @@ bool get_pen_delta( int *dx, int *dy ){
 	return true;
 }
 
+#if (defined(__GNUC__) && !defined(__clang__))
+__attribute__((optimize("O0")))
+#endif
+
+#if (!defined(__GNUC__) && defined(__clang__))
+__attribute__ ((optnone))
+#endif
+int fcopy(FILE *f1, FILE *f2, int maxFileSize){
+    char            buffer[BUFSIZ];
+    size_t          n=0,copiedBytes=0;
+    while ( ((n = fread(buffer, sizeof(char), sizeof(buffer), f1)) > 0) && (copiedBytes < maxFileSize) ){
+        if (fwrite(buffer, sizeof(char), n, f2) != n){
+            printf("fcopy: write failed. Halt hardware.");
+			while(1==1){}
+		}
+		copiedBytes += n;
+    }
+	return copiedBytes;
+}
+
+#if (defined(__GNUC__) && !defined(__clang__))
+__attribute__((optimize("O0")))
+#endif
+#if (!defined(__GNUC__) && defined(__clang__))
+__attribute__ ((optnone))
+#endif
 bool dumpARM7ARM9Binary(char * filename){
+	char debugBuf[256];
 	if(isNTROrTWLBinary(filename) == notTWLOrNTRBinary){
 		return false;
 	}
+	sprintf(debugBuf, "payload open OK\n");
+	nocashMessage(debugBuf);
 	FILE * fh = fopen(filename, "r");
 	if(fh != NULL){
 		int headerSize = sizeof(struct sDSCARTHEADER);
@@ -126,11 +156,15 @@ bool dumpARM7ARM9Binary(char * filename){
 			fclose(fh);
 			return false;
 		}
+		sprintf(debugBuf, "header OK\n");
+		nocashMessage(debugBuf);
 		struct sDSCARTHEADER * NDSHdr = (struct sDSCARTHEADER *)NDSHeader;
 		//ARM7
 		int arm7BootCodeSize = NDSHdr->arm7size;
 		u32 arm7BootCodeOffsetInFile = NDSHdr->arm7romoffset;
 		u32 arm7entryaddress = NDSHdr->arm7entryaddress;
+		sprintf(debugBuf, "ARM7: %d \n", arm7BootCodeSize);
+		nocashMessage(debugBuf);
 		fseek(fh, arm7BootCodeOffsetInFile, SEEK_SET);
 		u8* alloc = (u8*)TGDSARM9Malloc(arm7BootCodeSize);
 		fread(alloc, 1, arm7BootCodeSize, fh);
@@ -139,21 +173,25 @@ bool dumpARM7ARM9Binary(char * filename){
 			fwrite(alloc, 1, arm7BootCodeSize, fout);
 			fclose(fout);
 		}
+		else{
+			sprintf(debugBuf, "fail opening arm7.bin");
+			nocashMessage(debugBuf);
+		}
 		TGDSARM9Free(alloc);
 		//ARM9
 		int arm9BootCodeSize = NDSHdr->arm9size;
 		u32 arm9BootCodeOffsetInFile = NDSHdr->arm9romoffset;
 		u32 arm9entryaddress = NDSHdr->arm9entryaddress;
-		fseek(fh, arm9BootCodeOffsetInFile, SEEK_SET);
-		alloc = (u8*)TGDSARM9Malloc(arm9BootCodeSize);
-		fread(alloc, 1, arm9BootCodeSize, fh);
+		sprintf(debugBuf, "ARM9: %d \n", arm9BootCodeSize);
+		nocashMessage(debugBuf);
 		fout = fopen("0:/arm9.bin", "w+");
-		if(fout != NULL){
-			fwrite(alloc, 1, arm9BootCodeSize, fout);
-			fclose(fout);
-		}
-		TGDSARM9Free(alloc);
+		fseek(fh, arm9BootCodeOffsetInFile, SEEK_SET);
+		int arm9written = fcopy(fh, fout, arm9BootCodeSize);
+		sprintf(debugBuf, "ARM9 written: %d \n", arm9written);
+		nocashMessage(debugBuf);
+
 		TGDSARM9Free(NDSHeader);
+		fclose(fout);
 		fclose(fh);
 		
 		//layout-filename.txt
