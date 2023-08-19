@@ -63,6 +63,8 @@ extern float rotateX;
 extern float rotateY;
 extern float camMov;
 
+extern int fcopy(FILE *f1, FILE *f2, int maxFileSize);
+
 #ifdef __cplusplus
 }
 #endif

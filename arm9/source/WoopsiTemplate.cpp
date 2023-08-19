@@ -187,11 +187,6 @@ void WoopsiTemplate::startup(int argc, char **argv) {
 		_controlWindow3->addGadget(_micRecord);
 		_micRecord->addGadgetEventHandler(this);
 		_micRecording = false;
-		_dumpNDSSections = new Button(rect.x + 100, rect.y, 130, 16, "Dump NDS Sections");
-		_dumpNDSSections->setRefcon(10);
-		_controlWindow3->addGadget(_dumpNDSSections);
-		_dumpNDSSections->addGadgetEventHandler(this);
-		
 		_dumpARM7Memory = new Button(rect.x, rect.y, 100, 16, "Dump ARM7 Mem.");
 		_dumpARM7Memory->setRefcon(11);
 		_controlWindow3->addGadget(_dumpARM7Memory);
@@ -261,6 +256,11 @@ void WoopsiTemplate::startup(int argc, char **argv) {
 		_controlWindow3->addGadget(_RunToolchainGenericDSMB);
 		_RunToolchainGenericDSMB->addGadgetEventHandler(this);
 
+		_dumpNDSSections = new Button(rect.x + 116, rect.y + 16 + 16 + 16 + 16, 120, 16, "Dump NDS Sections");
+		_dumpNDSSections->setRefcon(10);
+		_controlWindow3->addGadget(_dumpNDSSections);
+		_dumpNDSSections->addGadgetEventHandler(this);
+		
 	}
 	
 	// Add Top Screen
