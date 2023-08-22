@@ -1266,6 +1266,7 @@ int InitGL()										// All Setup For OpenGL Goes Here
 	glEnable(GL_ANTIALIAS);
 	glEnable(GL_TEXTURE_2D); // Enable Texture Mapping 
 	glEnable(GL_BLEND);
+	glEnable(GL_COLOR_MATERIAL);	//allow to mix both glColor3f + light sources (glVertex + glNormal3f)
 
 	//#1: Load a texture and map each one to a texture slot
 	u32 arrayOfTextures[1];
