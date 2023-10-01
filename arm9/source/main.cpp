@@ -49,7 +49,7 @@ USA
 #include "cpptests.h"
 #include "libndsFIFO.h"
 #include "cartHeader.h"
-#include "VideoGL.h"
+#include "videoGL.h"
 #include "videoTGDS.h"
 #include "math.h"
 #include "posixFilehandleTest.h"

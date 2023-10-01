@@ -10,7 +10,7 @@
 #include <reent.h>
 #include "soundTGDS.h"
 #include "dswnifi_lib.h"
-#include "VideoGL.h"
+#include "videoGL.h"
 
 #ifdef __cplusplus
 #include "alert.h"

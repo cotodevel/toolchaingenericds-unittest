@@ -29,7 +29,7 @@
 #include "c_regression.h"
 #include "cpptests.h"
 #include "posixFilehandleTest.h"
-#include "VideoGL.h"
+#include "videoGL.h"
 #include "ndsDisplayListUtils.h"
 #include <stdio.h>
 #include <string.h>
