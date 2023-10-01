@@ -25,7 +25,7 @@ USA
 #include "dsregs.h"
 #include "fatfslayerTGDS.h"
 #include "utilsTGDS.h"
-#include "VideoGL.h"
+#include "videoGL.h"
 #include "WoopsiTemplate.h"
 #endif
 
