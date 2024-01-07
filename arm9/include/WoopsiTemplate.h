@@ -106,7 +106,6 @@ extern GLvoid BuildLists();
 extern GLvoid ReSizeGLScene(GLsizei width, GLsizei height);
 extern int textureArrayNDS[1];
 extern int InitGL();
-extern int DrawGLScene();
 
 #ifdef __cplusplus
 }
