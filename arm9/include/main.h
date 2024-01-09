@@ -50,19 +50,9 @@ extern void initMIC();
 extern int do_sound(char *sound);
 
 extern bool get_pen_delta( int *dx, int *dy );
-extern GLuint	texture[1];			// Storage For 1 Texture
-extern GLuint	box;				// Storage For The Box Display List
-extern GLuint	top;				// Storage For The Top Display List
-extern GLuint	xloop;				// Loop For X Axis
-extern GLuint	yloop;				// Loop For Y Axis
-extern GLfloat	xrot;				// Rotates Cube On The X Axis
-extern GLfloat	yrot;				// Rotates Cube On The Y Axis
-extern GLfloat boxcol[5][3];
-extern GLfloat topcol[5][3];
 extern float rotateX;
 extern float rotateY;
 extern float camMov;
-
 extern int fcopy(FILE *f1, FILE *f2, int maxFileSize);
 
 #ifdef __cplusplus
