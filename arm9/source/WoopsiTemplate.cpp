@@ -46,7 +46,6 @@
 
 //C++ part
 using namespace std;
-//#include <random>
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -904,11 +903,11 @@ void WoopsiTemplate::handleClickEvent(const GadgetEventArgs& e) {
 			_MultiLineTextBoxLogger->removeText(0);
 			_MultiLineTextBoxLogger->moveCursorToPosition(0);
 			_3DMode++;
-			if(_3DMode > 2){
+			if(_3DMode > 1){
 				_3DMode = 0;
 			}
 			if(_3DMode == 1){
-				_toggle2D3DMode->setText("Toggle: 3D Mode: OpenGL DisplayList");
+				_toggle2D3DMode->setText("Toggle: 2D Mode");
 				_MultiLineTextBoxLogger->appendText("Set to 3D Mode: Simple Triangle .\n");
 				//char debugBuf[256];
 				//sprintf(debugBuf, "Mic Recording ended: %s\n", recFile);
@@ -930,22 +929,6 @@ void WoopsiTemplate::handleClickEvent(const GadgetEventArgs& e) {
 					glClearColor(0,0,0);
 					glClearDepth(0x7FFF);
 				}
-			}
-			else if(_3DMode == 2){ //OpenGL Display List mode
-				_toggle2D3DMode->setText("Toggle: 2D Mode");
-				_MultiLineTextBoxLogger->appendText("Set to 3D Mode: OpenGL DisplayList .\n");
-
-				// OpenGL 1.1 Dynamic Display List 
-				//bool isTGDSCustomConsole = true;	//set default console or custom console: 3D mode
-				//GUI_init(isTGDSCustomConsole);
-				
-				//Update specific Engine A Bits
-				VRAMBLOCK_SETBANK_A(VRAM_A_ENGINE_A_3DENGINE_TEXTURE);
-				VRAMBLOCK_SETBANK_B(VRAM_B_ENGINE_A_3DENGINE_TEXTURE);
-
-				InitGL();
-				glEnable(GL_LIGHT0); //Light #0 enabled to allow colors to reflect onto normals in the upcoming scene
-				ReSizeGLScene(255, 191);			
 			}
 			else{
 				bool isTGDSCustomConsole = false;	//set default console or custom console: default console
@@ -1123,9 +1106,7 @@ void Woopsi::ApplicationMainLoop() {
 		
 		glFlush(); //DS: Update 3D buffer onto screen
 	}
-	else if(WoopsiTemplateProc->_3DMode == 2){
-		DrawGLScene();
-	}
+	
 	
 	handleARM9SVC();	/* Do not remove, handles TGDS services */
 }
@@ -1186,55 +1167,8 @@ vector<string> generateAndShuffleKeys(int keyCount){
 	return vect;
 }
 
-//GL Display Lists Unit Test: Cube Demo
-// Build Cube Display Lists
 GLvoid BuildLists(){
-	box=glGenLists(2);	// Generate 2 Different Lists
-	glNewList(box,GL_COMPILE);							// Start With The Box List
-		glBegin(GL_QUADS);
-			// Bottom Face
-			glNormal3f(0.5f,-1.0f, 0.0f);
-			glTexCoord2f(1.0f, 1.0f); glVertex3f(-1.0f, -1.0f, -1.0f);
-			glTexCoord2f(0.0f, 1.0f); glVertex3f( 1.0f, -1.0f, -1.0f);
-			glTexCoord2f(0.0f, 0.0f); glVertex3f( 1.0f, -1.0f,  1.0f);
-			glTexCoord2f(1.0f, 0.0f); glVertex3f(-1.0f, -1.0f,  1.0f);
-			// Front Face
-			glNormal3f( 1.0f, 1.0f, 1.0f);
-			glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, -1.0f,  1.0f);
-			glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f, -1.0f,  1.0f);
-			glTexCoord2f(1.0f, 1.0f); glVertex3f( 1.0f,  1.0f,  1.0f);
-			glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f,  1.0f,  1.0f);
-			// Back Face
-			glNormal3f( 1.0f, 1.0f,-1.0f);
-			glTexCoord2f(1.0f, 0.0f); glVertex3f(-1.0f, -1.0f, -1.0f);
-			glTexCoord2f(1.0f, 1.0f); glVertex3f(-1.0f,  1.0f, -1.0f);
-			glTexCoord2f(0.0f, 1.0f); glVertex3f( 1.0f,  1.0f, -1.0f);
-			glTexCoord2f(0.0f, 0.0f); glVertex3f( 1.0f, -1.0f, -1.0f);
-			// Right face
-			glNormal3f( 1.0f, 0.0f, 0.0f);
-			glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f, -1.0f, -1.0f);
-			glTexCoord2f(1.0f, 1.0f); glVertex3f( 1.0f,  1.0f, -1.0f);
-			glTexCoord2f(0.0f, 1.0f); glVertex3f( 1.0f,  1.0f,  1.0f);
-			glTexCoord2f(0.0f, 0.0f); glVertex3f( 1.0f, -1.0f,  1.0f);
-			// Left Face
-			glNormal3f(-1.0f, 0.0f, 1.0f);
-			glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, -1.0f, -1.0f);
-			glTexCoord2f(1.0f, 0.0f); glVertex3f(-1.0f, -1.0f,  1.0f);
-			glTexCoord2f(1.0f, 1.0f); glVertex3f(-1.0f,  1.0f,  1.0f);
-			glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f,  1.0f, -1.0f);
-		glEnd();
-	glEndList();
-	top=box+1;											// Storage For "Top" Is "Box" Plus One
-	glNewList(top,GL_COMPILE); // Now The "Top" Display List
-		glBegin(GL_QUADS);
-			// Top Face
-			glNormal3f( 1.0f, 1.0f, 1.0f);
-			glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f,  1.0f, -1.0f);
-			glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f,  1.0f,  1.0f);
-			glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f,  1.0f,  1.0f);
-			glTexCoord2f(1.0f, 1.0f); glVertex3f( 1.0f,  1.0f, -1.0f);
-		glEnd();
-	glEndList();
+	
 }
 
 GLvoid ReSizeGLScene(GLsizei width, GLsizei height)		// Resize And Initialize The GL Window
@@ -1256,7 +1190,6 @@ GLvoid ReSizeGLScene(GLsizei width, GLsizei height)		// Resize And Initialize Th
 	glLoadIdentity();									// Reset The Modelview Matrix
 }
 
-int textureArrayNDS[1]; //0 : Cube tex 
 int InitGL()										// All Setup For OpenGL Goes Here
 {
 	int TGDSOpenGLDisplayListWorkBufferSize = (256*1024);
@@ -1268,107 +1201,6 @@ int InitGL()										// All Setup For OpenGL Goes Here
 	glEnable(GL_BLEND);
 	glEnable(GL_COLOR_MATERIAL);	//allow to mix both glColor3f + light sources (glVertex + glNormal3f)
 
-	//#1: Load a texture and map each one to a texture slot
-	u32 arrayOfTextures[1];
-	arrayOfTextures[0] = (u32)&Texture_Cube;  
-	int texturesInSlot = LoadLotsOfGLTextures((u32*)&arrayOfTextures, (int*)&textureArrayNDS, 1); //Implements both glBindTexture and glTexImage2D 
-	int i = 0;
-	for(i = 0; i < texturesInSlot; i++){
-		//printf("Texture loaded: %d:textID[%d] Size: %d", i, textureArrayNDS[i], getTextureBaseFromTextureSlot(activeTexture));
-	}
-	
-	//#2: Emit Display Lists
 	BuildLists();										// Jump To The Code That Creates Our Display Lists
 	return true;				
-}
-
-int DrawGLScene(){									
-	scanKeys();
-	int pen_delta[2];
-	bool isTSCActive = get_pen_delta( &pen_delta[0], &pen_delta[1] );
-	if( isTSCActive == false ){
-		printfCoords(0, 16, " No TSC Activity ----");
-		rotateX = 0.0;
-		rotateY = 0.0;
-	}
-	else{
-		printfCoords(0, 16, "TSC Activity ----");
-		rotateX = pen_delta[0];
-		rotateY = pen_delta[1];
-		if(yrot > 0){
-			yrot-=rotateY;
-		}
-		else{
-			yrot+=rotateY;
-		}
-		
-		if(xrot > 0){
-			xrot-=rotateX;
-		}
-		else{
-			xrot+=rotateX;
-		}
-	}
-	if (keysDown() & KEY_LEFT)
-	{
-		camMov-=2.8f;
-	}
-	if (keysDown() & KEY_RIGHT)
-	{
-		camMov+=2.8f;
-	}
-
-				//Clear The Screen And The Depth Buffer
-	glReset(); //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	todo: implement https://stackoverflow.com/questions/28137027/why-do-i-need-glcleargl-depth-buffer-bit through cuboid tests and rendering into OpenGL
-	//Instead, we forcefully reset so always points to a first default projection matrix, then matrix node relative to a first default modelview 
-	
-	//Set initial view to look at
-	gluPerspective(18, 256.0 / 192.0, 0.1, 40);
-
-	//Camera perspective from there
-	gluLookAt(	0.0, 0.0, 4.0,		//camera possition 
-				0.0, 0.0, 0.0,		//look at
-				0.0, 1.0, 0.0		//up
-	);
-	glMaterialShinnyness();
-	
-	GLfloat light_ambient[]  = { 1.0f, 1.0f, 1.0f, 1.0f };
-    GLfloat light_diffuse[]  = { 1.0f, 1.0f, 1.0f, 1.0f };
-    GLfloat light_specular[] = { 1.0f, 1.0f, xrot, 1.0f };
-    GLfloat light_position[] = { 1.0f, 1.0f, 1.0f, 0.0f };
-
-    //GLfloat mat_ambient[]    = { 0.7f, 0.7f, 0.7f, 1.0f };
-    //GLfloat mat_diffuse[]    = { 0.8f, 0.8f, 0.8f, 1.0f };
-    //GLfloat mat_specular[]   = { 1.0f, 1.0f, 1.0f, 1.0f };
-    //GLfloat high_shininess[] = { 120.0f };
-	//Draw each cube through a set of Open GL Display List calls 
-	for (yloop=1;yloop<6;yloop++){
-		for (xloop=0;xloop<yloop;xloop++){
-			glBindTexture( 0, textureArrayNDS[0]);
-			// Reset The View
-			glLoadIdentity();
-			glTranslatef(1.4f+(float(xloop)*2.8f)-(float(yloop)*1.4f),((6.0f-float(yloop))*2.4f)-7.3f,-20.0f + camMov);
-			
-			glRotatef(45.0f-(2.0f*yloop)+xrot,1.0f,0.0f,0.0f);
-			glRotatef(45.0f+yrot,0.0f,1.0f,0.0f);
-
-			updateGXLights(); //Update GX 3D light scene!
-			
-			glLightfv(GL_LIGHT0, GL_AMBIENT,  light_ambient);
-			glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_diffuse);
-			glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-			glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-			GLfloat args[4];
-			args[0] = (GLfloat)RGB15(31,31,31);
-			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, (const GLfloat*)&args);	
-			//Run the precompiled standard Open GL 1.1 Display List here
-			glColor3fv(boxcol[yloop-1]);
-			glCallList(box);
-			glColor3fv(topcol[yloop-1]);
-			glCallList(top);
-		}
-	}
-	glFlush();
-	
-	return true;										// Keep Going
 }
