@@ -43,16 +43,10 @@ extern struct fd * _FileHandleVideo;
 extern struct fd * _FileHandleAudio;
 extern bool stopSoundStreamUser();
 extern void closeSoundUser();
-extern char args[8][MAX_TGDSFILENAME_LENGTH];
-extern char *argvs[8];
 extern bool dumpARM7ARM9Binary(char * filename);
 extern void initMIC();
 extern int do_sound(char *sound);
-
 extern bool get_pen_delta( int *dx, int *dy );
-extern float rotateX;
-extern float rotateY;
-extern float camMov;
 extern int fcopy(FILE *f1, FILE *f2, int maxFileSize);
 
 #ifdef __cplusplus
