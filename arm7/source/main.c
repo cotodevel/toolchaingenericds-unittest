@@ -45,6 +45,10 @@ static void InstallSoundSys()
 	fifoSetDatamsgHandler(FIFO_SNDSYS, returnMsgHandler, 0);
 }
 
+//TGDS-MB v3 bootloader
+void bootfile(){
+}
+
 //---------------------------------------------------------------------------------
 #if (defined(__GNUC__) && !defined(__clang__))
 __attribute__((optimize("O0")))
