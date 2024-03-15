@@ -43,6 +43,7 @@
 #include "Texture_Cube.h"
 #include "consoleTGDS.h"
 #include "imagepcx.h"
+#include "loader.h"
 
 //C++ part
 using namespace std;
