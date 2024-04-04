@@ -66,6 +66,10 @@ USA
 #include "debugNocash.h"
 #include <stdio.h>
 
+//ARM7 VRAM core
+#include "arm7vram.h"
+#include "arm7vram_twl.h"
+
 float rotateX = 0.0;
 float rotateY = 0.0;
 float camMov = -1.0;
@@ -277,6 +281,20 @@ __attribute__ ((optnone))
 int main(int argc, char **argv) {
 	
 	/*			TGDS 1.6 Standard ARM9 Init code start	*/
+	//Save Stage 1: IWRAM ARM7 payload: NTR/TWL (0x03800000)
+	memcpy((void *)TGDS_MB_V3_ARM7_STAGE1_ADDR, (const void *)0x02380000, (int)(96*1024));	//
+	coherent_user_range_by_size((uint32)TGDS_MB_V3_ARM7_STAGE1_ADDR, (int)(96*1024)); //		also for TWL binaries 
+	
+	//Execute Stage 2: VRAM ARM7 payload: NTR/TWL (0x06000000)
+	u32 * payload = NULL;
+	if(__dsimode == false){
+		payload = (u32*)&arm7vram[0];	
+	}
+	else{
+		payload = (u32*)&arm7vram_twl[0];
+	}
+	executeARM7Payload((u32)0x02380000, 96*1024, payload);
+	
 	bool isTGDSCustomConsole = false;	//set default console or custom console: default console
 	GUI_init(isTGDSCustomConsole);
 	GUI_clear();
