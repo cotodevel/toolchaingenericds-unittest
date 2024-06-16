@@ -66,6 +66,10 @@ USA
 #include "debugNocash.h"
 #include <stdio.h>
 
+//ARM7 VRAM core
+#include "arm7vram.h"
+#include "arm7vram_twl.h"
+
 float rotateX = 0.0;
 float rotateY = 0.0;
 float camMov = -1.0;
@@ -268,9 +272,6 @@ int do_sound(char *sound){
 	return 0;
 }
 
-char args[8][MAX_TGDSFILENAME_LENGTH];
-char *argvs[8];
-
 #if (defined(__GNUC__) && !defined(__clang__))
 __attribute__((optimize("Os")))
 #endif
@@ -280,6 +281,20 @@ __attribute__ ((optnone))
 int main(int argc, char **argv) {
 	
 	/*			TGDS 1.6 Standard ARM9 Init code start	*/
+	//Save Stage 1: IWRAM ARM7 payload: NTR/TWL (0x03800000)
+	memcpy((void *)TGDS_MB_V3_ARM7_STAGE1_ADDR, (const void *)0x02380000, (int)(96*1024));	//
+	coherent_user_range_by_size((uint32)TGDS_MB_V3_ARM7_STAGE1_ADDR, (int)(96*1024)); //		also for TWL binaries 
+	
+	//Execute Stage 2: VRAM ARM7 payload: NTR/TWL (0x06000000)
+	u32 * payload = NULL;
+	if(__dsimode == false){
+		payload = (u32*)&arm7vram[0];	
+	}
+	else{
+		payload = (u32*)&arm7vram_twl[0];
+	}
+	executeARM7Payload((u32)0x02380000, 96*1024, payload);
+	
 	bool isTGDSCustomConsole = false;	//set default console or custom console: default console
 	GUI_init(isTGDSCustomConsole);
 	GUI_clear();
@@ -287,21 +302,10 @@ int main(int argc, char **argv) {
 	printf("              ");
 	printf("              ");
 	
-	//xmalloc init removes args, so save them
-	int i = 0;
-	for(i = 0; i < argc; i++){
-		argvs[i] = argv[i];
-	}
-
 	bool isCustomTGDSMalloc = true;
-	setTGDSMemoryAllocator(getProjectSpecificMemoryAllocatorSetup(TGDS_ARM7_MALLOCSTART, TGDS_ARM7_MALLOCSIZE, isCustomTGDSMalloc, TGDSDLDI_ARM7_ADDRESS));
+	setTGDSMemoryAllocator(getProjectSpecificMemoryAllocatorSetup(isCustomTGDSMalloc));
 	sint32 fwlanguage = (sint32)getLanguage();
 	
-	//argv destroyed here because of xmalloc init, thus restore them
-	for(i = 0; i < argc; i++){
-		argv[i] = argvs[i];
-	}
-
 	int ret=FS_init();
 	if (ret == 0)
 	{
@@ -336,7 +340,7 @@ int main(int argc, char **argv) {
 		}
 		//Force ARM7 reload once 
 		if( 
-			(argc < 3) 
+			(argc < 2) 
 			&& 
 			(strncmp(argv[1], TGDSProj, strlen(TGDSProj)) != 0) 	
 		){
@@ -364,36 +368,20 @@ int main(int argc, char **argv) {
 			
 			//pass incoming launcher's ARGV0
 			char arg0[256];
-			int newArgc = 3;
+			int newArgc = 2;
 			if (argc > 2) {
-				printf(" ---- test");
-				printf(" ---- test");
-				printf(" ---- test");
-				printf(" ---- test");
-				printf(" ---- test");
-				printf(" ---- test");
-				printf(" ---- test");
-				printf(" ---- test");
-				
-				//arg 0: original NDS caller
-				//arg 1: this NDS binary
-				//arg 2: this NDS binary's ARG0: filepath
+				//Arg0:	Chainload caller: TGDS-MB
+				//Arg1:	This NDS Binary reloaded through ChainLoad
+				//Arg2: This NDS Binary reloaded through ChainLoad's Argument0
 				strcpy(arg0, (const char *)argv[2]);
 				newArgc++;
 			}
-			//or else stub out an incoming arg0 for relaunched TGDS binary
-			else {
-				strcpy(arg0, (const char *)"0:/incomingCommand.bin");
-				newArgc++;
-			}
-			//debug end
 			
-			char thisArgv[4][MAX_TGDSFILENAME_LENGTH];
+			char thisArgv[3][MAX_TGDSFILENAME_LENGTH];
 			memset(thisArgv, 0, sizeof(thisArgv));
-			strcpy(&thisArgv[0][0], thisTGDSProject);	//Arg0:	This Binary loaded
-			strcpy(&thisArgv[1][0], curChosenBrowseFile);	//Arg1:	Chainload caller: TGDS-MB
-			strcpy(&thisArgv[2][0], thisTGDSProject);	//Arg2:	NDS Binary reloaded through ChainLoad
-			strcpy(&thisArgv[3][0], (char*)&arg0[0]);//Arg3: NDS Binary reloaded through ChainLoad's ARG0
+			strcpy(&thisArgv[0][0], curChosenBrowseFile);	//Arg0:	Chainload caller: TGDS-MB
+			strcpy(&thisArgv[1][0], thisTGDSProject);	//Arg1:	NDS Binary reloaded through ChainLoad
+			strcpy(&thisArgv[2][0], (char*)arg0);	//Arg2: NDS Binary reloaded through ChainLoad's ARG0
 			addARGV(newArgc, (char*)&thisArgv);				
 			if(TGDSMultibootRunNDSPayload(curChosenBrowseFile) == false){ //should never reach here, nor even return true. Should fail it returns false
 				
@@ -402,6 +390,7 @@ int main(int argc, char **argv) {
 	}
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
+	setupDisabledExceptionHandler();
 	REG_IME = 0;
 	MPUSet();
 	//TGDS-Projects -> legacy NTR TSC compatibility
@@ -409,7 +398,6 @@ int main(int argc, char **argv) {
 		TWLSetTouchscreenTWLMode();
 	}
 	REG_IME = 1;
-	
 	InstallSoundSys();
 	initMIC();
 	

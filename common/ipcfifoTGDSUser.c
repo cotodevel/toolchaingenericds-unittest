@@ -30,8 +30,15 @@ USA
 #include "dsregs.h"
 #include "dsregs_asm.h"
 #include "InterruptsARMCores_h.h"
-#include "libutilsShared.h"
+
+//libraries
 #include "microphoneShared.h"
+#include "libutilsShared.h"
+#include "wifi_shared.h"
+#ifdef ARM9
+#include "dswnifi_lib.h"
+#endif
+
 
 #ifdef ARM7
 #include <string.h>
@@ -119,12 +126,14 @@ void setupLibUtils(){
 		(HandleFifoNotEmptyWeakRefLibUtils_fn)&libUtilsFIFONotEmpty, //ARM7 & ARM9
 		(wifiUpdateVBLANKARM7LibUtils_fn)&Wifi_Update, //ARM7
 		(wifiInterruptARM7LibUtils_fn)&Wifi_Interrupt,  //ARM7
-		NULL, //ARM7: void TIMER1Handler()
-		NULL, 	//ARM7: void stopSound()
-		NULL,	//ARM7: void setupSound()
+		(SoundStreamTimerHandlerARM7LibUtils_fn)&TIMER1Handler, //ARM7: void TIMER1Handler()
+		(SoundStreamStopSoundARM7LibUtils_fn)&stopSound, 	//ARM7: void stopSound()
+		(SoundStreamSetupSoundARM7LibUtils_fn)&setupSound,	//ARM7: void setupSound()
 		(initMallocARM7LibUtils_fn)&initARM7Malloc, //ARM7: void initARM7Malloc(u32 ARM7MallocStartaddress, u32 ARM7MallocSize);
 		(wifiDeinitARM7ARM9LibUtils_fn)&DeInitWIFI,  //ARM7 & ARM9: DeInitWIFI()
-		NULL //ARM7: micInterrupt()
+		(MicInterruptARM7LibUtils_fn)&micInterrupt, //ARM7: micInterrupt()
+		(DeInitWIFIARM7LibUtils_fn)&DeInitWIFI, //ARM7: DeInitWIFI()
+		(wifiAddressHandlerARM7LibUtils_fn)&wifiAddressHandler	//ARM7: void wifiAddressHandler( void * address, void * userdata )
 	);
 	#endif
 }
