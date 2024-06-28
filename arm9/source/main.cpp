@@ -74,6 +74,15 @@ float rotateX = 0.0;
 float rotateY = 0.0;
 float camMov = -1.0;
 
+u32 * getTGDSMBV3ARM7Bootloader(){
+	if(__dsimode == false){
+		return (u32*)&arm7vram[0];	
+	}
+	else{
+		return (u32*)&arm7vram_twl[0];
+	}
+}
+
 //true: pen touch
 //false: no tsc activity
 bool get_pen_delta( int *dx, int *dy ){
@@ -119,31 +128,35 @@ int fcopy(FILE *f1, FILE *f2, int maxFileSize){
 	return copiedBytes;
 }
 
+u8 NDSHeaderStruct[4096];
+
 #if (defined(__GNUC__) && !defined(__clang__))
 __attribute__((optimize("O0")))
 #endif
 #if (!defined(__GNUC__) && defined(__clang__))
 __attribute__ ((optnone))
 #endif
-bool dumpARM7ARM9Binary(char * filename){
+bool extractNDSBinary(char * filename){
 	char debugBuf[256];
-	if(isNTROrTWLBinary(filename) == notTWLOrNTRBinary){
+	register int isNTRTWLBinary = isNTROrTWLBinary(filename);
+	if(isNTRTWLBinary == notTWLOrNTRBinary){
 		return false;
 	}
 	sprintf(debugBuf, "payload open OK\n");
 	nocashMessage(debugBuf);
 	FILE * fh = fopen(filename, "r");
 	if(fh != NULL){
-		int headerSize = sizeof(struct sDSCARTHEADER);
-		u8 * NDSHeader = (u8 *)TGDSARM9Malloc(headerSize*sizeof(u8));
+		int headerSize = sizeof(NDSHeaderStruct); //TWL header
+		u8 * NDSHeader = (u8 *)&NDSHeaderStruct[0];
+		memset(NDSHeader, 0, headerSize);
 		if (fread(NDSHeader, 1, headerSize, fh) != headerSize){
-			TGDSARM9Free(NDSHeader);
 			fclose(fh);
 			return false;
 		}
 		sprintf(debugBuf, "header OK\n");
 		nocashMessage(debugBuf);
 		struct sDSCARTHEADER * NDSHdr = (struct sDSCARTHEADER *)NDSHeader;
+		
 		//ARM7
 		int arm7BootCodeSize = NDSHdr->arm7size;
 		u32 arm7BootCodeOffsetInFile = NDSHdr->arm7romoffset;
@@ -156,6 +169,7 @@ bool dumpARM7ARM9Binary(char * filename){
 		FILE * fout = fopen("0:/arm7.bin", "w+");
 		if(fout != NULL){
 			fwrite(alloc, 1, arm7BootCodeSize, fout);
+			fsync(fileno(fout));
 			fclose(fout);
 		}
 		else{
@@ -163,6 +177,7 @@ bool dumpARM7ARM9Binary(char * filename){
 			nocashMessage(debugBuf);
 		}
 		TGDSARM9Free(alloc);
+		
 		//ARM9
 		int arm9BootCodeSize = NDSHdr->arm9size;
 		u32 arm9BootCodeOffsetInFile = NDSHdr->arm9romoffset;
@@ -174,9 +189,45 @@ bool dumpARM7ARM9Binary(char * filename){
 		int arm9written = fcopy(fh, fout, arm9BootCodeSize);
 		sprintf(debugBuf, "ARM9 written: %d \n", arm9written);
 		nocashMessage(debugBuf);
-
-		TGDSARM9Free(NDSHeader);
+		fsync(fileno(fout));
 		fclose(fout);
+		
+		u32 arm7iBootCodeOffsetInFile = *(u32*)&NDSHeaderStruct[0x1D0];	//0x1D0 DSi7 ROM offset
+		u32 arm7iRamAddress = *(u32*)&NDSHeaderStruct[0x1D8];	//0x1D8   DSi7 RAM address
+		int arm7iBootCodeSize = *(u32*)&NDSHeaderStruct[0x1DC];	//0x1DC   DSi7 code size
+		
+		u32 arm9iBootCodeOffsetInFile = *(u32*)&NDSHeaderStruct[0x1C0];	//0x1C0   DSi9 ROM offset
+		u32 arm9iRamAddress = *(u32*)&NDSHeaderStruct[0x1C8];	//0x1C8   DSi9 RAM address
+		int arm9iBootCodeSize = *(u32*)&NDSHeaderStruct[0x1CC];	//0x1CC   DSi9 code size
+		
+		if(isNTRTWLBinary == isTWLBinary){
+			//ARM7i
+			fout = fopen("0:/arm7i.bin", "w+");
+			fseek(fh, arm7iBootCodeOffsetInFile, SEEK_SET);
+			int arm7iwritten = fcopy(fh, fout, arm7iBootCodeSize);
+			sprintf(debugBuf, "ARM7i written: %d \n", arm7iwritten);
+			nocashMessage(debugBuf);
+			fsync(fileno(fout));
+			fclose(fout);
+			
+			//ARM9i
+			fout = fopen("0:/arm9i.bin", "w+");
+			fseek(fh, arm9iBootCodeOffsetInFile, SEEK_SET);
+			int arm9iwritten = fcopy(fh, fout, arm9iBootCodeSize);
+			sprintf(debugBuf, "ARM9i written: %d \n", arm9iwritten);
+			nocashMessage(debugBuf);
+			fsync(fileno(fout));
+			fclose(fout);
+			
+			//TWL Header.bin
+			fout = fopen("0:/twlHeader.bin", "w+");
+			fseek(fh, 0, SEEK_SET);
+			int twlHeaderWritten = fcopy(fh, fout, (16*1024));	//TWL header is 16K @ ROM offset 0
+			sprintf(debugBuf, "twlHeader.bin written: %d \n", twlHeaderWritten);
+			nocashMessage(debugBuf);
+			fsync(fileno(fout));
+			fclose(fout);
+		}
 		fclose(fh);
 		
 		//layout-filename.txt
@@ -188,12 +239,65 @@ bool dumpARM7ARM9Binary(char * filename){
 		fh = fopen(fname, "w+");
 		if(fh != NULL){
 			char buff[256+1];
+			
+			if(isNTRTWLBinary == isNDSBinaryV1Slot2){
+				sprintf(buff, "NDS Binary type: [NTR Slot2 - PassmeV1]\n");
+				fputs(buff, fh);
+			}
+			else if(isNTRTWLBinary == isNDSBinaryV1){
+				sprintf(buff, "NDS Binary type: [NTR Slot1 - PassmeV1 -- NDSLIB  / Custom SDK]\n");
+				fputs(buff, fh);
+			}
+			else if(isNTRTWLBinary == isNDSBinaryV2){
+				sprintf(buff, "NDS Binary type: [NTR Slot1 - PassmeV2 -- DevkitARM]\n");
+				fputs(buff, fh);
+			}
+			else if(isNTRTWLBinary == isNDSBinaryV3){
+				sprintf(buff, "NDS Binary type: [NTR Slot1 - PassmeV3 -- ToolchainGenericDS / DevkitARM]\n");
+				fputs(buff, fh);
+			}
+			else if(isNTRTWLBinary == isTWLBinary){
+				sprintf(buff, "NDS Binary type: [TWL SD - PassmeV3 -- ToolchainGenericDS / DevkitARM]\n");
+				fputs(buff, fh);
+			}
+			
 			sprintf(buff, "%s Sections: %s",filename, "\n");
 			fputs(buff, fh);
-			sprintf(buff, "[arm7.bin]:%s%x -- %s -> %d bytes [@ EntryAddress: 0x%x] %s", "arm7BootCodeOffsetInFile: 0x", arm7BootCodeOffsetInFile, "arm7BootCodeSize: ", arm7BootCodeSize, arm7entryaddress, "\n");
-			fputs(buff, fh);
-			sprintf(buff, "[arm9.bin]:%s%x -- %s -> %d bytes [@ EntryAddress: 0x%x] %s", "arm9BootCodeOffsetInFile: 0x", arm9BootCodeOffsetInFile, "arm9BootCodeSize: ", arm9BootCodeSize, arm9entryaddress, "\n");
-			fputs(buff, fh);
+			
+			if(isNTRTWLBinary == isTWLBinary){
+				sprintf(buff, "TWL ARM7: [arm7.bin]:%s%x -- %s -> %d bytes [@ EntryAddress: 0x%x] %s", "arm7BootCodeOffsetInFile: 0x", arm7BootCodeOffsetInFile, "arm7BootCodeSize: ", arm7BootCodeSize, arm7entryaddress, "\n");
+				fputs(buff, fh);
+				sprintf(buff, "TWL ARM9: [arm9.bin]:%s%x -- %s -> %d bytes [@ EntryAddress: 0x%x] %s", "arm9BootCodeOffsetInFile: 0x", arm9BootCodeOffsetInFile, "arm9BootCodeSize: ", arm9BootCodeSize, arm9entryaddress, "\n");
+				fputs(buff, fh);
+				
+				if(arm7iBootCodeSize > 0){
+					sprintf(buff, "TWL ARM7i: [arm7i.bin]:%s%x -- %s -> %d bytes [@ EntryAddress: 0x%x] %s", "arm7iBootCodeOffsetInFile: 0x", arm7iBootCodeOffsetInFile, "arm7iBootCodeSize: ", arm7iBootCodeSize, arm7iRamAddress, "\n");
+					fputs(buff, fh);
+				}
+				else{
+					sprintf(buff, "TWL ARM7i: [arm7i.bin]: No section found. \n");
+					fputs(buff, fh);
+				}
+				
+				if(arm9iBootCodeSize > 0){
+					sprintf(buff, "TWL ARM9i: [arm9i.bin]:%s%x -- %s -> %d bytes [@ EntryAddress: 0x%x] %s", "arm9iBootCodeOffsetInFile: 0x", arm9iBootCodeOffsetInFile, "arm9iBootCodeSize: ", arm9iBootCodeSize, arm9iRamAddress, "\n");
+					fputs(buff, fh);
+				}
+				else{
+					sprintf(buff, "TWL ARM9i: [arm9i.bin]: No section found. \n");
+					fputs(buff, fh);
+				}
+				
+				sprintf(buff, "[twlHeader.bin]:0x00000000 %d bytes \n", 16*1024);
+				fputs(buff, fh);
+			}
+			else{
+				sprintf(buff, "NTR ARM7: [arm7.bin]:%s%x -- %s -> %d bytes [@ EntryAddress: 0x%x] %s", "arm7BootCodeOffsetInFile: 0x", arm7BootCodeOffsetInFile, "arm7BootCodeSize: ", arm7BootCodeSize, arm7entryaddress, "\n");
+				fputs(buff, fh);
+				sprintf(buff, "NTR ARM9: [arm9.bin]:%s%x -- %s -> %d bytes [@ EntryAddress: 0x%x] %s", "arm9BootCodeOffsetInFile: 0x", arm9BootCodeOffsetInFile, "arm9BootCodeSize: ", arm9BootCodeSize, arm9entryaddress, "\n");
+				fputs(buff, fh);
+			}
+			
 			fclose(fh);
 		}
 		return true;
@@ -383,7 +487,8 @@ int main(int argc, char **argv) {
 			strcpy(&thisArgv[1][0], thisTGDSProject);	//Arg1:	NDS Binary reloaded through ChainLoad
 			strcpy(&thisArgv[2][0], (char*)arg0);	//Arg2: NDS Binary reloaded through ChainLoad's ARG0
 			addARGV(newArgc, (char*)&thisArgv);				
-			if(TGDSMultibootRunNDSPayload(curChosenBrowseFile) == false){ //should never reach here, nor even return true. Should fail it returns false
+			u32 * payload = getTGDSMBV3ARM7Bootloader();
+			if(TGDSMultibootRunNDSPayload(curChosenBrowseFile, (u8*)payload) == false){ //should never reach here, nor even return true. Should fail it returns false
 				
 			}
 		}
