@@ -34,9 +34,9 @@ USA
 extern "C" {
 #endif
 
+extern u32 * getTGDSMBV3ARM7Bootloader();
 extern int main(int argc, char **argv);
 extern void ApplicationMainLoop();
-extern u32 * getTGDSMBV3ARM7Bootloader();
 
 //TGDS Soundstreaming API
 extern int internalCodecType;
@@ -44,12 +44,11 @@ extern struct fd * _FileHandleVideo;
 extern struct fd * _FileHandleAudio;
 extern bool stopSoundStreamUser();
 extern void closeSoundUser();
-extern bool extractNDSBinary(char * filename);
+extern bool dumpARM7ARM9Binary(char * filename);
 extern void initMIC();
 extern int do_sound(char *sound);
 extern bool get_pen_delta( int *dx, int *dy );
 extern int fcopy(FILE *f1, FILE *f2, int maxFileSize);
-extern u8 NDSHeaderStruct[4096];
 
 #ifdef __cplusplus
 }

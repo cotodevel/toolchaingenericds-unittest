@@ -468,10 +468,9 @@ void WoopsiTemplate::handleValueChangeEvent(const GadgetEventArgs& e) {
 				strcpy(&thisArgv[0][0], TGDS_CHAINLOADCALLER);	
 				strcpy(&thisArgv[1][0], TGDS_CHAINLOADTARGET);	
 				strcpy(&thisArgv[2][0], "0:/directoryDemo/fileDemo.bin");	
-				addARGV(3, (char*)&thisArgv);
 				strcpy(currentFileChosen, TGDS_CHAINLOADEXEC);
 				u32 * payload = getTGDSMBV3ARM7Bootloader();
-				if(TGDSMultibootRunNDSPayload(currentFileChosen, (u8*)payload) == false){ //should never reach here, nor even return true. Should fail it returns false
+				if(TGDSMultibootRunNDSPayload(currentFileChosen, (u8*)payload, 3, (char*)&thisArgv) == false){ //should never reach here, nor even return true. Should fail it returns false
 					printfWoopsi("Invalid NDS/TWL Binary");
 					printfWoopsi("or you are in NTR mode trying to load a TWL binary.");
 					printfWoopsi("or you are missing the TGDS-multiboot payload in root path.");
@@ -540,7 +539,7 @@ void WoopsiTemplate::handleValueChangeEvent(const GadgetEventArgs& e) {
 					_MultiLineTextBoxLogger->removeText(0);
 					_MultiLineTextBoxLogger->moveCursorToPosition(0);
 					//Extract ARM7 and ARM9 bin
-					if(extractNDSBinary((char*)currentFileChosen) == true){
+					if(dumpARM7ARM9Binary((char*)currentFileChosen) == true){
 						_MultiLineTextBoxLogger->appendText("NDS/TWL Sections emitted correctly.");
 					}
 					else{
@@ -561,9 +560,8 @@ void WoopsiTemplate::handleValueChangeEvent(const GadgetEventArgs& e) {
 						strcpy(&thisArgv[0][0], TGDSPROJECTNAME);	//Arg0:	This Binary loaded
 						strcpy(&thisArgv[1][0], currentFileChosen);	//Arg1:	NDS Binary reloaded
 						strcpy(&thisArgv[2][0], "");					//Arg2: NDS Binary ARG0
-						addARGV(3, (char*)&thisArgv);
 						u32 * payload = getTGDSMBV3ARM7Bootloader();
-						if(TGDSMultibootRunNDSPayload(currentFileChosen, (u8*)payload) == false){  //Should fail it returns false. (Audio track)
+						if(TGDSMultibootRunNDSPayload(currentFileChosen, (u8*)payload, 3, (char*)&thisArgv) == false){  //Should fail it returns false. (Audio track)
 							pendPlay = 1;
 						}
 					}
@@ -1026,10 +1024,9 @@ void WoopsiTemplate::handleClickEvent(const GadgetEventArgs& e) {
 			strcpy(&thisArgv[0][0], TGDS_CHAINLOADCALLER);	//Arg0:	This Binary loaded
 			strcpy(&thisArgv[1][0], TGDS_CHAINLOADEXEC);	//Arg1:	NDS Binary to chainload through TGDS-MB
 			strcpy(&thisArgv[2][0], TGDS_CHAINLOADTARGET);	//Arg2: NDS Binary loaded from TGDS-MB	
-			addARGV(3, (char*)&thisArgv);
 			strcpy(currentFileChosen, TGDS_CHAINLOADEXEC);
 			u32 * payload = getTGDSMBV3ARM7Bootloader();
-			if(TGDSMultibootRunNDSPayload(currentFileChosen, (u8*)payload) == false){ //should never reach here, nor even return true. Should fail it returns false
+			if(TGDSMultibootRunNDSPayload(currentFileChosen, (u8*)payload, 3, (char*)&thisArgv) == false){ //should never reach here, nor even return true. Should fail it returns false
 				printfWoopsi("Invalid NDS/TWL Binary");
 				printfWoopsi("or you are in NTR mode trying to load a TWL binary.");
 				printfWoopsi("or you are missing the TGDS-multiboot payload in root path.");
