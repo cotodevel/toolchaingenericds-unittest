@@ -44,7 +44,6 @@ USA
 #include <socket.h>
 #include <in.h>
 #include <assert.h>
-#include "WoopsiTemplate.h"
 
 #endif
 
@@ -73,22 +72,26 @@ bool TGDSRecvHandlerUser(struct frameBlock * frameBlockRecv, int DSWnifiMode){
 		}
 		break;
 		
-		//Local or UDP NIFI
-		case(dswifi_localnifimode):
-		case(dswifi_udpnifimode):{
-			char mode[16];
-			if(DSWnifiMode == dswifi_localnifimode){
-				strcpy(mode, "[Local Nifi]");
-			}
-			else{
-				strcpy(mode, "[UDP Nifi]");
-			}
-			char msgBuf[256];
-			sprintf(msgBuf, "%sIncoming Packet: \n[%s]\n\n[Bytes:%d]\n", mode, frameBlockRecv->framebuffer, frameBlockRecv->frameSize);
-			WoopsiTemplateProc->_MultiLineTextBoxLogger->appendText(msgBuf);			
+		//NIFI local
+		case(dswifi_localnifimode):{
+			clrscr();
+			printf(" ---- ");
+			printf(" ---- ");
+			printf("DSWNIFIStatus:LocalNifi!");
 			return true;
 		}
 		break;
+		
+		//UDP NIFI
+		case(dswifi_udpnifimode):{
+			clrscr();
+			printf(" ---- ");
+			printf(" ---- ");
+			printf("DSWNIFIStatus:UDPNifi!");
+			return true;
+		}
+		break;
+		
 	}
 	return false;
 }
@@ -114,25 +117,17 @@ void OnDSWIFIGDBStubEnable(){
 //UDP Nifi:
 //Step 1: TGDS Project is asked for Remote Companion's IP (AKA: WAN Remote TCP/IP)
 void ONDSWIFI_UDPNifiInvalidIP(char * targetIP){
-	WoopsiTemplateProc->_MultiLineTextBoxLogger->removeText(0);
-	WoopsiTemplateProc->_MultiLineTextBoxLogger->moveCursorToPosition(0);
-	//UDP Nifi IP: show button here
-	WoopsiTemplateProc->_udpNifiMsgBox->show();
-	WoopsiTemplateProc->_udpNifiMsgBox->focus();
+	
 }
 
 //Step 2: TGDS Project connected successfully to Remote Companion
 void ONDSWIFI_UDPNifiRemoteServerConnected(char * targetIP){
-	char msgBuf[256];
-	sprintf(msgBuf, "Connecting to Remote Companion: \n[%s]\n", targetIP);
-	WoopsiTemplateProc->_MultiLineTextBoxLogger->appendText(msgBuf);
+	
 }
 
 //Step 3: TGDS Project connected successfully to another DS implementing the DSWNFI protocol
 void ONDSWIFI_UDPNifiExternalDSConnected(char * externalDSIP){
-	char msgBuf[256];
-	sprintf(msgBuf, "UDP NIFI Stablished. Remote DS IP: \n[%s]\n", externalDSIP);
-	WoopsiTemplateProc->_MultiLineTextBoxLogger->appendText(msgBuf);
+	
 }
 
 //GDBStub Callbacks

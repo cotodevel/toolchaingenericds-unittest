@@ -39,6 +39,8 @@ extern "C"{
 //}
 
 extern void ONDSWIFI_UDPNifiInvalidIP(char * targetIP);
+extern void ONDSWIFI_UDPNifiRemoteServerConnected(char * targetIP);
+extern void ONDSWIFI_UDPNifiExternalDSConnected(char * externalDSIP);
 
 #ifdef __cplusplus
 }

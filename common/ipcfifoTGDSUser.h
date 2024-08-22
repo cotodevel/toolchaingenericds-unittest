@@ -31,15 +31,15 @@ USA
 #include "dsregs.h"
 #include "dsregs_asm.h"
 #include "ipcfifoTGDS.h"
-#include "dswnifi.h"
+
+#ifdef ARM9
 #include "posixHandleTGDS.h"
+#endif
 
 //---------------------------------------------------------------------------------
-struct sIPCSharedTGDSSpecific {
-//---------------------------------------------------------------------------------
-	uint32 frameCounter7;	//VBLANK counter7
-	uint32 frameCounter9;	//VBLANK counter9
-};
+typedef struct sIPCSharedTGDSSpecific{
+	
+}  IPCSharedTGDSSpecific	__attribute__((aligned (4)));
 
 //libnds FIFO
 typedef struct
@@ -52,11 +52,11 @@ typedef struct
 #define FIFO_SNDSYS FIFO_USER_01
 #define FIFO_RETURN FIFO_USER_02
 
-//TGDS Memory Layout ARM7/ARM9 Cores
-#define TGDS_ARM7_MALLOCSTART (u32)(0x06018000)
-#define TGDS_ARM7_MALLOCSIZE (int)(16*1024)
-#define TGDSDLDI_ARM7_ADDRESS (u32)(TGDS_ARM7_MALLOCSTART + TGDS_ARM7_MALLOCSIZE)	//0x0601C000
-#define TGDS_ARM7_AUDIOBUFFER_STREAM (u32)(0x03800000)
+//TGDS Memory Layout ARM7/ARM9 Cores (WoopsiSDK relies on IWRAM to both play IMA-ADPCM / Run TGDS-Multiboot v3 / Run ARM7 VRAM Core)
+#define TGDS_ARM7_MALLOCSTART (u32)(0x06008000)
+#define TGDS_ARM7_MALLOCSIZE (int)(4*1024)
+#define TGDSDLDI_ARM7_ADDRESS (u32)(TGDS_ARM7_MALLOCSTART + TGDS_ARM7_MALLOCSIZE)
+#define TGDS_ARM7_AUDIOBUFFER_STREAM (u32)(TGDSDLDI_ARM7_ADDRESS + (32*1024))
 
 #endif
 
@@ -64,11 +64,10 @@ typedef struct
 extern "C" {
 #endif
 
+extern  struct sIPCSharedTGDSSpecific* getsIPCSharedTGDSSpecific();
 //NOT weak symbols : the implementation of these is project-defined (here)
-extern void HandleFifoNotEmptyWeakRef(u32 cmd1, uint32 cmd2);
-extern void HandleFifoEmptyWeakRef(uint32 cmd1,uint32 cmd2);
-
-extern struct sIPCSharedTGDSSpecific* getsIPCSharedTGDSSpecific();
+extern void HandleFifoNotEmptyWeakRef(uint32 cmd1, uint32 cmd2);
+extern void HandleFifoEmptyWeakRef(uint32 cmd1, uint32 cmd2);
 
 #ifdef __cplusplus
 }
