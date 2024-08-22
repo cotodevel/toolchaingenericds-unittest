@@ -23,6 +23,7 @@ USA
 #include "xmem.h"
 #include "dldi.h"
 #include "dsregs.h"
+#include "utilsTGDS.h"
 
 ////////[For custom Memory Allocator implementation]:////////
 //You need to override getProjectSpecificMemoryAllocatorSetup():
@@ -32,20 +33,13 @@ USA
 	////////[Custom Memory implementation ]////////
 
 //Definition that overrides the weaksymbol expected from toolchain to init ARM9's TGDS memory allocation
-#if (defined(__GNUC__) && !defined(__clang__))
-__attribute__((optimize("O0")))
-#endif
-
-#if (!defined(__GNUC__) && defined(__clang__))
-__attribute__ ((optnone))
-#endif
-struct AllocatorInstance * getProjectSpecificMemoryAllocatorSetup(bool isCustomTGDSMalloc) {
+struct AllocatorInstance * getProjectSpecificMemoryAllocatorSetup(bool isCustomTGDSMalloc){
 	struct AllocatorInstance * customMemoryAllocator = &CustomAllocatorInstance;
 	memset((u8*)customMemoryAllocator, 0, sizeof(CustomAllocatorInstance));
 	customMemoryAllocator->customMalloc = isCustomTGDSMalloc;
 	
 	customMemoryAllocator->ARM9MallocStartaddress = (u32)sbrk(0);
-	customMemoryAllocator->memoryToAllocate = (2384*1024);
+	customMemoryAllocator->memoryToAllocate = (1800*1024);
 	customMemoryAllocator->CustomTGDSMalloc9 = (TGDSARM9MallocHandler)&Xmalloc;
 	customMemoryAllocator->CustomTGDSCalloc9 = (TGDSARM9CallocHandler)&Xcalloc;
 	customMemoryAllocator->CustomTGDSFree9 = (TGDSARM9FreeHandler)&Xfree;
@@ -60,5 +54,6 @@ struct AllocatorInstance * getProjectSpecificMemoryAllocatorSetup(bool isCustomT
 	
 	//Memory Setup: ARM7 TGDS 64K = 0x03800000 ~ 0x03810000. TGDS Sound Streaming code: Enabled
 	WRAM_CR = WRAM_32KARM9_0KARM7;
+	
 	return customMemoryAllocator;
 }
