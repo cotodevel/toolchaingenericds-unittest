@@ -27,7 +27,7 @@ USA
 #include <time.h>
 #include <stdarg.h>
 #include <ctype.h>
-#include "ipcfifoTGDSUser.h"
+#include "../../../common/ipcfifoTGDSUser.h"
 
 #include "typedefsTGDS.h"
 #include "dsregs.h"
@@ -47,7 +47,7 @@ USA
 extern "C" {
 #endif
 
-////////[Custom Console implementation is selected, thus stubs are implemented here]////////
+////////[Default Console implementation is selected, thus stubs are implemented here]////////
 
 //Definition that overrides the weaksymbol expected from toolchain to init console video subsystem
 extern vramSetup * getProjectSpecificVRAMSetup();
@@ -56,8 +56,6 @@ extern vramSetup * getProjectSpecificVRAMSetup();
 
 //1) VRAM Layout
 extern bool InitProjectSpecificConsole();
-
-extern vramSetup * TGDSFOOBILLIARD_3DVRAM_SETUP();
 
 #ifdef __cplusplus
 }

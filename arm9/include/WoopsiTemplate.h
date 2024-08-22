@@ -11,6 +11,8 @@
 #include "soundTGDS.h"
 #include "dswnifi_lib.h"
 #include "videoGL.h"
+#include "libndsFIFO.h"
+#include "microphoneShared.h"
 
 #ifdef __cplusplus
 #include "alert.h"
