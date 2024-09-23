@@ -1,5 +1,5 @@
 #include "c_regression.h"
-#include "c_partial_mock.h"
+#include "fizzbuzz.h"
 #include "opmock.h"
 
 #include <stdlib.h>

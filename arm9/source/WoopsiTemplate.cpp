@@ -24,8 +24,8 @@
 #include "libndsFIFO.h"
 #include "TGDSLogoLZSSCompressed.h"
 #include "opmock.h"
-#include "c_partial_mock.h"
-#include "c_partial_mock_test.h"
+#include "fizzbuzz_test.h"
+#include "fizzbuzz.h"
 #include "c_regression.h"
 #include "cpptests.h"
 #include "posixFilehandleTest.h"
@@ -44,6 +44,7 @@
 #include "consoleTGDS.h"
 #include "imagepcx.h"
 #include "loader.h"
+#include "TGDSMemoryAllocator.h"
 
 //C++ part
 using namespace std;
@@ -354,8 +355,8 @@ void WoopsiTemplate::handleValueChangeEvent(const GadgetEventArgs& e) {
 			_MultiLineTextBoxLogger->removeText(0);
 			_MultiLineTextBoxLogger->moveCursorToPosition(0);
 			sprintf(debugBuf, "Handling test: %s", currentFileChosen);
-			if(strncmp(currentFileChosen,"c_partial_mock", strlen(currentFileChosen)) == 0){
-				//c_partial_mock
+			if(strncmp(currentFileChosen,"malloc_test", strlen(currentFileChosen)) == 0){
+				//malloc_test
 				opmock_test_suite_reset();
 				opmock_register_test(test_fizzbuzz_with_15, "test_fizzbuzz_with_15");
 				opmock_register_test(test_fizzbuzz_many_3, "test_fizzbuzz_many_3");
@@ -470,11 +471,17 @@ void WoopsiTemplate::handleValueChangeEvent(const GadgetEventArgs& e) {
 				strcpy(&thisArgv[2][0], "0:/directoryDemo/fileDemo.bin");	
 				strcpy(currentFileChosen, TGDS_CHAINLOADEXEC);
 				u32 * payload = getTGDSMBV3ARM7Bootloader();
-				if(TGDSMultibootRunNDSPayload(currentFileChosen, (u8*)payload, 3, (char*)&thisArgv) == false){ //should never reach here, nor even return true. Should fail it returns false
-					printfWoopsi("Invalid NDS/TWL Binary");
-					printfWoopsi("or you are in NTR mode trying to load a TWL binary.");
-					printfWoopsi("or you are missing the TGDS-multiboot payload in root path.");
-					printfWoopsi("Press (A) to continue.");
+				
+				bool isTGDSTWLHomebrew = false;
+				if(isNTROrTWLBinary(currentFileChosen, &isTGDSTWLHomebrew) != notTWLOrNTRBinary){
+					bool isCustomTGDSMalloc = true; //Provides WoopsiSDK-TGDS Multiboot compatibility
+					setTGDSMemoryAllocator(getWoopsiSDKToolchainGenericDSMultibootMemoryAllocatorSetup(isCustomTGDSMalloc));
+					if(TGDSMultibootRunNDSPayload(currentFileChosen, (u8*)payload, 3, (char*)&thisArgv) == false){ //should never reach here, nor even return true. Should fail it returns false
+						printfWoopsi("Invalid NDS/TWL Binary");
+						printfWoopsi("or you are in NTR mode trying to load a TWL binary.");
+						printfWoopsi("or you are missing the TGDS-multiboot payload in root path.");
+						printfWoopsi("Press (A) to continue.");
+					}
 				}
 			}
 			else{
@@ -549,22 +556,21 @@ void WoopsiTemplate::handleValueChangeEvent(const GadgetEventArgs& e) {
 				break;
 				default:{
 					//Boot .NDS file! (homebrew only)
-					char tmpName[256];
-					char ext[256];
-					strcpy(tmpName, currentFileChosen);
-					separateExtension(tmpName, ext);
-					strlwr(ext);
-					{
-						char thisArgv[3][MAX_TGDSFILENAME_LENGTH];
-						memset(thisArgv, 0, sizeof(thisArgv));
-						strcpy(&thisArgv[0][0], TGDSPROJECTNAME);	//Arg0:	This Binary loaded
-						strcpy(&thisArgv[1][0], currentFileChosen);	//Arg1:	NDS Binary reloaded
-						strcpy(&thisArgv[2][0], "");					//Arg2: NDS Binary ARG0
-						u32 * payload = getTGDSMBV3ARM7Bootloader();
+					char thisArgv[3][MAX_TGDSFILENAME_LENGTH];
+					memset(thisArgv, 0, sizeof(thisArgv));
+					strcpy(&thisArgv[0][0], TGDSPROJECTNAME);	//Arg0:	This Binary loaded
+					strcpy(&thisArgv[1][0], currentFileChosen);	//Arg1:	NDS Binary reloaded
+					strcpy(&thisArgv[2][0], "");					//Arg2: NDS Binary ARG0
+					u32 * payload = getTGDSMBV3ARM7Bootloader();
+					bool isTGDSTWLHomebrew = false;
+					if(isNTROrTWLBinary(currentFileChosen, &isTGDSTWLHomebrew) != notTWLOrNTRBinary){
+						bool isCustomTGDSMalloc = true; //Provides WoopsiSDK-TGDS Multiboot compatibility
+						setTGDSMemoryAllocator(getWoopsiSDKToolchainGenericDSMultibootMemoryAllocatorSetup(isCustomTGDSMalloc));
 						if(TGDSMultibootRunNDSPayload(currentFileChosen, (u8*)payload, 3, (char*)&thisArgv) == false){  //Should fail it returns false. (Audio track)
 							pendPlay = 1;
 						}
 					}
+					
 				}break;
 			}
 			_parentRefcon = -1;
@@ -966,7 +972,7 @@ void WoopsiTemplate::handleClickEvent(const GadgetEventArgs& e) {
 		case 17:{
 			char debugBuf[256];
 			__UnitTestList->removeAllOptions();
-			__UnitTestList->addOption("c_partial_mock", 0);
+			__UnitTestList->addOption("malloc_test", 0);
 			__UnitTestList->addOption("c_regression", 1);
 			__UnitTestList->addOption("cpp_tests", 2);
 			__UnitTestList->addOption("posix_filehandle_tests", 3);
@@ -1026,11 +1032,17 @@ void WoopsiTemplate::handleClickEvent(const GadgetEventArgs& e) {
 			strcpy(&thisArgv[2][0], TGDS_CHAINLOADTARGET);	//Arg2: NDS Binary loaded from TGDS-MB	
 			strcpy(currentFileChosen, TGDS_CHAINLOADEXEC);
 			u32 * payload = getTGDSMBV3ARM7Bootloader();
-			if(TGDSMultibootRunNDSPayload(currentFileChosen, (u8*)payload, 0, (char*)&thisArgv) == false){ //should never reach here, nor even return true. Should fail it returns false
-				printfWoopsi("Invalid NDS/TWL Binary");
-				printfWoopsi("or you are in NTR mode trying to load a TWL binary.");
-				printfWoopsi("or you are missing the TGDS-multiboot payload in root path.");
-				printfWoopsi("Press (A) to continue.");
+			
+			bool isTGDSTWLHomebrew = false;
+			if(isNTROrTWLBinary(currentFileChosen, &isTGDSTWLHomebrew) != notTWLOrNTRBinary){				
+				bool isCustomTGDSMalloc = true; //Provides WoopsiSDK-TGDS Multiboot compatibility
+				setTGDSMemoryAllocator(getWoopsiSDKToolchainGenericDSMultibootMemoryAllocatorSetup(isCustomTGDSMalloc));
+				if(TGDSMultibootRunNDSPayload(currentFileChosen, (u8*)payload, 0, (char*)&thisArgv) == false){ //should never reach here, nor even return true. Should fail it returns false
+					printfWoopsi("Invalid NDS/TWL Binary");
+					printfWoopsi("or you are in NTR mode trying to load a TWL binary.");
+					printfWoopsi("or you are missing the TGDS-multiboot payload in root path.");
+					printfWoopsi("Press (A) to continue.");
+				}
 			}
 		}
 		break;

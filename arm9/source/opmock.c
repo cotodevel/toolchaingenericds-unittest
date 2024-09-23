@@ -117,7 +117,7 @@ void opmock_test_suite_run()
  	opmock_test_run = 0;
   
  	// reset terminal
-	printfWoopsi("Running tests: ");
+	printfWoopsi("Running malloc tests: ");
 
 	for(counter = 0; counter < opmock_test_counter; counter++) {
 		int previous_error = opmock_test_error;
