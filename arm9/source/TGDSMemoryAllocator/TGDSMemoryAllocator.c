@@ -33,7 +33,7 @@ struct AllocatorInstance * getProjectSpecificMemoryAllocatorSetup(bool isCustomT
 	customMemoryAllocator->customMalloc = isCustomTGDSMalloc;
 	
 	customMemoryAllocator->memoryToAllocate = (1024*1024);
-	customMemoryAllocator->ARM9MallocStartaddress = (u32)sbrk(-customMemoryAllocator->memoryToAllocate); //recover 1MB + use memory wrappers
+	customMemoryAllocator->ARM9MallocStartaddress = (u32)sbrk(0);
 	customMemoryAllocator->CustomTGDSMalloc9 = (TGDSARM9MallocHandler)&malloc;
 	customMemoryAllocator->CustomTGDSCalloc9 = (TGDSARM9CallocHandler)&calloc;
 	customMemoryAllocator->CustomTGDSFree9 = (TGDSARM9FreeHandler)&free;

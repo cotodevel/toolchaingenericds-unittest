@@ -18,38 +18,28 @@ USA
 
 */
 
-#ifndef __main9_h__
-#define __main9_h__
+#ifndef __interrupts7_h__
+#define __interrupts7_h__
 
 #include "typedefsTGDS.h"
 #include "dsregs.h"
-#include "fatfslayerTGDS.h"
-#include "utilsTGDS.h"
-#include "videoGL.h"
-#include "WoopsiTemplate.h"
-#include "debugNocash.h"
-#endif
 
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern u32 * getTGDSARM7VRAMCore();
-extern int main(int argc, char **argv);
-extern void ApplicationMainLoop();
-
-//TGDS Soundstreaming API
-extern int internalCodecType;
-extern struct fd * _FileHandleVideo; 
-extern struct fd * _FileHandleAudio;
-extern bool stopSoundStreamUser();
-extern void closeSoundUser();
-extern bool dumpARM7ARM9Binary(char * filename);
-extern void initMIC();
-extern int do_sound(char *sound);
-extern bool get_pen_delta( int *dx, int *dy );
-extern int fcopy(FILE *f1, FILE *f2, int maxFileSize);
+extern void IpcSynchandlerUser(uint8 ipcByte);
+extern void Timer0handlerUser();
+extern void Timer1handlerUser();
+extern void Timer2handlerUser();
+extern void Timer3handlerUser();
+extern void HblankUser();
+extern void VblankUser();
+extern void VcounterUser();
+extern void screenLidHasOpenedhandlerUser();
+extern void screenLidHasClosedhandlerUser();
 
 #ifdef __cplusplus
 }

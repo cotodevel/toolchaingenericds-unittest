@@ -470,7 +470,7 @@ void WoopsiTemplate::handleValueChangeEvent(const GadgetEventArgs& e) {
 				strcpy(&thisArgv[1][0], TGDS_CHAINLOADTARGET);	
 				strcpy(&thisArgv[2][0], "0:/directoryDemo/fileDemo.bin");	
 				strcpy(currentFileChosen, TGDS_CHAINLOADEXEC);
-				u32 * payload = getTGDSMBV3ARM7Bootloader();
+				u32 * payload = getTGDSARM7VRAMCore();
 				
 				bool isTGDSTWLHomebrew = false;
 				if(isNTROrTWLBinary(currentFileChosen, &isTGDSTWLHomebrew) != notTWLOrNTRBinary){
@@ -561,7 +561,7 @@ void WoopsiTemplate::handleValueChangeEvent(const GadgetEventArgs& e) {
 					strcpy(&thisArgv[0][0], TGDSPROJECTNAME);	//Arg0:	This Binary loaded
 					strcpy(&thisArgv[1][0], currentFileChosen);	//Arg1:	NDS Binary reloaded
 					strcpy(&thisArgv[2][0], "");					//Arg2: NDS Binary ARG0
-					u32 * payload = getTGDSMBV3ARM7Bootloader();
+					u32 * payload = getTGDSARM7VRAMCore();
 					bool isTGDSTWLHomebrew = false;
 					if(isNTROrTWLBinary(currentFileChosen, &isTGDSTWLHomebrew) != notTWLOrNTRBinary){
 						bool isCustomTGDSMalloc = true; //Provides WoopsiSDK-TGDS Multiboot compatibility
@@ -1031,7 +1031,7 @@ void WoopsiTemplate::handleClickEvent(const GadgetEventArgs& e) {
 			strcpy(&thisArgv[1][0], TGDS_CHAINLOADEXEC);	//Arg1:	NDS Binary to chainload through TGDS-MB
 			strcpy(&thisArgv[2][0], TGDS_CHAINLOADTARGET);	//Arg2: NDS Binary loaded from TGDS-MB	
 			strcpy(currentFileChosen, TGDS_CHAINLOADEXEC);
-			u32 * payload = getTGDSMBV3ARM7Bootloader();
+			u32 * payload = getTGDSARM7VRAMCore();
 			
 			bool isTGDSTWLHomebrew = false;
 			if(isNTROrTWLBinary(currentFileChosen, &isTGDSTWLHomebrew) != notTWLOrNTRBinary){				
