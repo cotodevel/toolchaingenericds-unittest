@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "c_regression.h"
-#include "c_partial_mock.h"
+#include "fizzbuzz.h"
 #include "opmock.h"
 #include "fatfslayerTGDS.h"
 #include "posixHandleTGDS.h"
