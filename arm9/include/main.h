@@ -35,7 +35,7 @@ USA
 extern "C" {
 #endif
 
-extern u32 * getTGDSMBV3ARM7Bootloader();
+extern u32 * getTGDSARM7VRAMCore();
 extern int main(int argc, char **argv);
 extern void ApplicationMainLoop();
 

@@ -1,12 +1,12 @@
-#include "c_partial_mock.h"
-#include "main.h"
+#include "fizzbuzz.h"
+#include "sound.h"
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <malloc.h>
+
 #include "posixHandleTGDS.h"
-#include "WoopsiTemplate.h"
 
 char * fizzbuzz (int i)
 {
