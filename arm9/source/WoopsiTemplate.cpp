@@ -430,7 +430,7 @@ void WoopsiTemplate::handleValueChangeEvent(const GadgetEventArgs& e) {
 			else if(strncmp(currentFileChosen,"ndsDisplayListUtils_tests", strlen(currentFileChosen)) == 0){
 				/*
 				//Unit Test: #0
-				//ndsDisplayListUtils_tests: Nintendo DS reads embedded and compiled Cube.bin binary (https://bitbucket.org/Coto88/blender-nds-exporter/src) from filesystem
+				//ndsDisplayListUtils_tests: Nintendo DS reads embedded and compiled Cube.bin binary (https://github.com/cotodevel/blender-nds-exporter) from filesystem
 				//which generates a NDS GX Display List object, then it gets compiled again into a binary DisplayList.
 				bool res = ndsDisplayListUtilsTestCaseARM9("0:/Cube_test.bin", "0:/Cube_compiled.bin");
 				if(res != true){

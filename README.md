@@ -9,7 +9,7 @@ master: Development branch. Use TGDS1.65: branch for stable features.
 This is the ToolchainGenericDS-UnitTest project:
 
 1.	Compile Toolchain:
-To compile this project you will need to follow the steps at https://bitbucket.org/Coto88/toolchaingenericds :
+To compile this project you will need to follow the steps at https://github.com/cotodevel/toolchaingenericds :
 Then simply extract the project somewhere.
 
 2.	Compile this project: 
@@ -23,7 +23,7 @@ After compiling, run the example in NDS.
 Project Specific description:
 A Woopsi UI + TGDS SDK template for UI control handling on the NintendoDS. 
 Draw the pop up windows across the screen or scroll other windows to test touchscreen. 
-- Performs various SDK tests using the touchscreen, including Local Nifi, UDP Nifi(https://bitbucket.org/Coto88/toolchaingenericds-helper/src/master/misc/tcp/), provided a 2nd DS (real hardware) to connect to, and other tests
+- Performs various SDK tests using the touchscreen, including Local Nifi, UDP Nifi(https://github.com/cotodevel/toolchaingenericds-unittest/), provided a 2nd DS (real hardware) to connect to, and other tests
 
 Note: UI Controls experimental.
 
@@ -36,7 +36,7 @@ to take out the SD card repeteadly and thus, causing it to wear out and to break
 Usage:
 - Make sure the wifi settings in the NintendoDS are properly set up, so you're already able to connect to internet from it.
 
-- Get a copy of ToolchainGenericDS-multiboot: https://bitbucket.org/Coto88/ToolchainGenericDS-multiboot/get/TGDS1.65.zip
+- Get a copy of ToolchainGenericDS-multiboot: http://github.com/cotodevel/ToolchainGenericDS-multiboot/archive/TGDS1.65.zip
 Follow the instructions there and get either the TWL or NTR version. Make sure you update the computer IP address used to build TGDS Projects, 
 in the file: toolchaingenericds-multiboot-config.txt of said repository before moving it into SD card.
 
@@ -58,6 +58,6 @@ and toolchaingenericds-multiboot-config.txt (update here, the computer's IP you 
 
 
 
-Latest stable release: https://bitbucket.org/Coto88/ToolchainGenericDS-UnitTest/get/TGDS1.65.zip
+Latest stable release: http://github.com/cotodevel/ToolchainGenericDS-UnitTest/archive/TGDS1.65.zip
 
 Coto
