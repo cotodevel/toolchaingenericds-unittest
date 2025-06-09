@@ -180,7 +180,7 @@ int testPosixFilehandle_fgetc_feof_method() {
 	u8 * writeBuf = TGDSARM9Malloc(256);
 	int loop=0;
 	char * fileNameTest = "0:/test.txt";
-	char * charTest = "TGDS NTR/TWL App from coto88.bitbucket.io";
+	char * charTest = "TGDS NTR/TWL App from cotodevel.github.io";
 	fp = fopen(fileNameTest, "w+");
 	if(fp != NULL) {
 		fputs(charTest, fp);
