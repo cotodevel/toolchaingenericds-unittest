@@ -657,7 +657,7 @@ __attribute__((optimize("O0")))
 #if (!defined(__GNUC__) && defined(__clang__))
 __attribute__ ((optnone))
 #endif
-void InstallSoundSys()
+void InstallLibNDSFIFOSys9()
 {
 	/* Install FIFO */
 	fifoSetDatamsgHandler(FIFO_RETURN, returnMsgHandler, 0);
@@ -811,13 +811,7 @@ void WoopsiTemplate::handleClickEvent(const GadgetEventArgs& e) {
 
 		//_testLibNDSFifo Event
 		case 13:{
-			returnMsg msg;
-			sprintf((char*)&msg.data[0], "%s", "Test message using libnds FIFO API!");
-			if(fifoSendDatamsg(FIFO_SNDSYS, sizeof(msg), (u8*) &msg) != true){
-				_MultiLineTextBoxLogger->removeText(0);
-				_MultiLineTextBoxLogger->moveCursorToPosition(0);
-				_MultiLineTextBoxLogger->appendText("libnds FIFO API failure.");
-			}
+			sendTestLibNDSFIFO();
 		}	
 		break;
 
@@ -1124,7 +1118,6 @@ void Woopsi::ApplicationMainLoop() {
 		glFlush(); //DS: Update 3D buffer onto screen
 	}
 	
-	
 	bool waitForVblank = false;
 	int threadsRan = runThreads(internalTGDSThreads, waitForVblank);
 }
@@ -1221,4 +1214,14 @@ int InitGL()										// All Setup For OpenGL Goes Here
 
 	BuildLists();										// Jump To The Code That Creates Our Display Lists
 	return true;				
+}
+
+void sendTestLibNDSFIFO(){
+	returnMsg msg;
+	sprintf((char*)&msg.data[0], "%s", "Test message using libnds FIFO API!");
+	if(fifoSendDatamsg(FIFO_SNDSYS, sizeof(msg), (u8*) &msg) != true){
+		WoopsiTemplateProc->_MultiLineTextBoxLogger->removeText(0);
+		WoopsiTemplateProc->_MultiLineTextBoxLogger->moveCursorToPosition(0);
+		WoopsiTemplateProc->_MultiLineTextBoxLogger->appendText("libnds FIFO API failure.");
+	}
 }

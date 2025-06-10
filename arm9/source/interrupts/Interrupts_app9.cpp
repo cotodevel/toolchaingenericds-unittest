@@ -89,7 +89,21 @@ void VblankUser(){
 __attribute__((section(".itcm")))
 #endif
 void VcounterUser(){
-	
+	scanKeys();
+	u32 keysNow = keysDown();
+	if(keysNow & KEY_A){
+		while(keysHeld() & KEY_A){
+			scanKeys();
+		}
+		sendTestLibNDSFIFO();
+	}
+	else if(keysNow & KEY_R){
+		while(keysHeld() & KEY_R){
+			scanKeys();
+		}
+		GUI.GBAMacroMode = !GUI.GBAMacroMode;
+		TGDSLCDSwap();
+	} 
 }
 
 //Note: this event is hardware triggered from ARM7, on ARM9 a signal is raised through the FIFO hardware
