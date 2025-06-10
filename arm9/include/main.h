@@ -28,6 +28,8 @@ USA
 #include "videoGL.h"
 #include "WoopsiTemplate.h"
 #include "debugNocash.h"
+#include "TGDS_threads.h"
+
 #endif
 
 
@@ -50,6 +52,8 @@ extern void initMIC();
 extern int do_sound(char *sound);
 extern bool get_pen_delta( int *dx, int *dy );
 extern int fcopy(FILE *f1, FILE *f2, int maxFileSize);
+
+extern struct task_Context * internalTGDSThreads;
 
 #ifdef __cplusplus
 }

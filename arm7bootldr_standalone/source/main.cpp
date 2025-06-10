@@ -32,6 +32,7 @@ USA
 #include "ipcfifoTGDSUser.h"
 #include "dldi.h"
 #include "debugNocash.h"
+#include "TGDS_threads.h"
 
 //////////////////////////////////////////////////////////////////////////
 //TGDS-mb v3
@@ -102,11 +103,12 @@ int main(int argc, char **argv)  {
 	while(!(*(u8*)0x04000240 & 2) ){} //wait for VRAM_D block
 	ARM7InitDLDI(TGDS_ARM7_MALLOCSTART, TGDS_ARM7_MALLOCSIZE, TGDSDLDI_ARM7_ADDRESS);
 	SendFIFOWords(FIFO_ARM7_RELOAD, 0xFF); //ARM7 Reload OK -> acknowledge ARM9
+	struct task_Context * TGDSThreads = getTGDSThreadSystem();
     /*			TGDS 1.6 Standard ARM7 Init code end	*/
 	
 	while (1) {
-		handleARM7SVC();	/* Do not remove, handles TGDS services */
-		HaltUntilIRQ(); //Save power until next Vblank
+		bool waitForVblank = false;
+		int threadsRan = runThreads(TGDSThreads, waitForVblank);
 	}
 	return 0;
 }

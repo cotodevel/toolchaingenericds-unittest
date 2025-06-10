@@ -45,6 +45,7 @@
 #include "imagepcx.h"
 #include "loader.h"
 #include "TGDSMemoryAllocator.h"
+#include "TGDS_threads.h"
 
 //C++ part
 using namespace std;
@@ -1124,7 +1125,8 @@ void Woopsi::ApplicationMainLoop() {
 	}
 	
 	
-	handleARM9SVC();	/* Do not remove, handles TGDS services */
+	bool waitForVblank = false;
+	int threadsRan = runThreads(internalTGDSThreads, waitForVblank);
 }
 
 #if (defined(__GNUC__) && !defined(__clang__))
