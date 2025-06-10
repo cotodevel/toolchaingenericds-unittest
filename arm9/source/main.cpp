@@ -320,6 +320,8 @@ int main(int argc, char **argv) {
 	RenderTGDSLogoMainEngine((uint8*)&TGDSLogoLZSSCompressed[0], TGDSLogoLZSSCompressed_size);
 	menuShow();
 	
+	InstallLibNDSFIFOSys9();
+
 	// Create Woopsi UI
 	WoopsiTemplate WoopsiTemplateApp;
 	WoopsiTemplateProc = &WoopsiTemplateApp;

@@ -34,6 +34,28 @@ USA
 #include "debugNocash.h"
 #include "TGDS_threads.h"
 
+
+//libnds FIFO testbed start
+#include "libndsFIFO.h"
+
+static void returnMsgHandler(int bytes, void* user_data);
+
+//Should ARM9 send a message, then, it'll be received and replied
+static void returnMsgHandler(int bytes, void* user_data)
+{
+	returnMsg msg;
+	fifoGetDatamsg(FIFO_SNDSYS, bytes, (u8*) &msg);
+	fifoSendDatamsg(FIFO_RETURN, bytes, (u8*) &msg);
+}
+
+static void InstallLibNDSFIFOSys7()
+{
+	/* Install FIFO */
+	fifoSetDatamsgHandler(FIFO_SNDSYS, returnMsgHandler, 0);
+}
+
+//libnds FIFO testbed end
+
 //////////////////////////////////////////////////////////////////////////
 //TGDS-mb v3
 char fname[256];
@@ -100,6 +122,7 @@ int main(int argc, char **argv)  {
 	
 	/*			TGDS 1.6 Standard ARM7 Init code start	*/
 	installWifiFIFO();
+	InstallLibNDSFIFOSys7();
 	while(!(*(u8*)0x04000240 & 2) ){} //wait for VRAM_D block
 	ARM7InitDLDI(TGDS_ARM7_MALLOCSTART, TGDS_ARM7_MALLOCSIZE, TGDSDLDI_ARM7_ADDRESS);
 	SendFIFOWords(FIFO_ARM7_RELOAD, 0xFF); //ARM7 Reload OK -> acknowledge ARM9

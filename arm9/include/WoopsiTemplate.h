@@ -101,13 +101,15 @@ extern u32 pendPlay;
 extern char currentFileChosen[256+1];
 extern char somebuf[frameDSsize];	//use frameDSsize as the sender buffer size, any other size won't be sent.
 extern void returnMsgHandler(int bytes, void* user_data);
-extern void InstallSoundSys();
+extern void InstallLibNDSFIFOSys9();
 extern int printfWoopsi(const char *fmt, ...);
 
 extern GLvoid BuildLists();
 extern GLvoid ReSizeGLScene(GLsizei width, GLsizei height);
 extern int textureArrayNDS[1];
 extern int InitGL();
+
+extern void sendTestLibNDSFIFO();
 
 #ifdef __cplusplus
 }
