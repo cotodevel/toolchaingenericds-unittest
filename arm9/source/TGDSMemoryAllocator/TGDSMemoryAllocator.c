@@ -58,7 +58,7 @@ struct AllocatorInstance * getWoopsiSDKToolchainGenericDSMultibootMemoryAllocato
 	customMemoryAllocator->customMalloc = isCustomTGDSMalloc;
 	
 	customMemoryAllocator->ARM9MallocStartaddress = (u32)sbrk(0);
-	customMemoryAllocator->memoryToAllocate = (768*1024);
+	customMemoryAllocator->memoryToAllocate = ( (1*1024*1024) + (768*1024) );
 	customMemoryAllocator->CustomTGDSMalloc9 = (TGDSARM9MallocHandler)&Xmalloc;
 	customMemoryAllocator->CustomTGDSCalloc9 = (TGDSARM9CallocHandler)&Xcalloc;
 	customMemoryAllocator->CustomTGDSFree9 = (TGDSARM9FreeHandler)&Xfree;
