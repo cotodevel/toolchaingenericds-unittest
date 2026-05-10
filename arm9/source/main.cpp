@@ -264,11 +264,11 @@ int main(int argc, char **argv) {
 	memcpy((void *)TGDS_MB_V3_ARM7_STAGE1_ADDR, (const void *)0x02380000, (int)(96*1024));
 	coherent_user_range_by_size((uint32)TGDS_MB_V3_ARM7_STAGE1_ADDR, (int)(96*1024));
 	
-	//Execute Stage 2: VRAM ARM7 payload: TWL (0x06000000). Otherwise DLDI init failure
-	if(__dsimode == true){ //Fixes TGDS WoopsiSDK TWL compatibility on TWL hardware
+	//Execute Stage 2: VRAM ARM7 payload: TWL (0x06000000). Otherwise DLDI init failure + fifo api failure
+	//if(__dsimode == true){ //Fixes TGDS WoopsiSDK TWL compatibility on TWL hardware
 		u32 * payload = getTGDSARM7VRAMCore();
 		executeARM7Payload((u32)0x02380000, 96*1024, payload);
-	}
+	//}
 	
 	bool isTGDSCustomConsole = false;	//set default console or custom console: default console
 	GUI_init(isTGDSCustomConsole);
