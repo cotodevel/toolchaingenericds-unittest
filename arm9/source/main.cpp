@@ -259,13 +259,16 @@ __attribute__ ((optnone))
 #endif
 int main(int argc, char **argv) {
 	/*			TGDS 1.6 Standard ARM9 Init code start	*/
+	
 	//Save Stage 1: IWRAM ARM7 payload: NTR/TWL (0x03800000)
 	memcpy((void *)TGDS_MB_V3_ARM7_STAGE1_ADDR, (const void *)0x02380000, (int)(96*1024));
 	coherent_user_range_by_size((uint32)TGDS_MB_V3_ARM7_STAGE1_ADDR, (int)(96*1024));
 	
-	//Execute Stage 2: VRAM ARM7 payload: NTR/TWL (0x06000000)
-	u32 * payload = getTGDSARM7VRAMCore();
-	executeARM7Payload((u32)0x02380000, 96*1024, payload);
+	//Execute Stage 2: VRAM ARM7 payload: TWL (0x06000000). Otherwise DLDI init failure
+	if(__dsimode == true){ //Fixes TGDS WoopsiSDK TWL compatibility on TWL hardware
+		u32 * payload = getTGDSARM7VRAMCore();
+		executeARM7Payload((u32)0x02380000, 96*1024, payload);
+	}
 	
 	bool isTGDSCustomConsole = false;	//set default console or custom console: default console
 	GUI_init(isTGDSCustomConsole);
@@ -287,7 +290,8 @@ int main(int argc, char **argv) {
 	if (ret != 0){
 		printf("%s: FS Init error: %d >%d", TGDSPROJECTNAME, ret, TGDSPrintfColor_Red);
 		while(1==1){
-			swiDelay(1);
+			bool waitForVblank = false;
+			int threadsRan = runThreads(internalTGDSThreads, waitForVblank);
 		}
 	}
 	/*			TGDS 1.6 Standard ARM9 Init code end	*/
